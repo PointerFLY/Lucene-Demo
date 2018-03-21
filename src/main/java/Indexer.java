@@ -23,11 +23,11 @@ class Indexer {
 
     Indexer() {
         executor = new ThreadPoolExecutor(
-                6,
-                32,
+                8,
+                64,
                 60,
                 TimeUnit.SECONDS,
-                new ArrayBlockingQueue<Runnable>(100)
+                new ArrayBlockingQueue<Runnable>(3000)
         );
     }
 
@@ -49,33 +49,25 @@ class Indexer {
 
             ArrayList<Path> paths = FileUtils.getAllReportFiles();
             for (Path path: paths) {
-                executor.execute(new Runnable() {
-                    @Override
-                    public void run() {
-                        ArrayList<Report> reports = FileParser.readReport(path);
+                executor.execute(() -> {
+                    ArrayList<Report> reports = FileParser.readReport(path);
 
-                        // TODO: Topics, more members, add document wisely.
-                        for (Report report: reports) {
-                            StringField id = new StringField(Report.ID, report.getId(), Field.Store.YES);
-                            TextField author = new TextField(Report.AUTHOR, report.getAuthor(), Field.Store.NO);
-                            TextField content = new TextField(Report.CONTENT, report.getContent(), Field.Store.NO);
+                    // TODO: Topics, more members, add document wisely.
+                    for (Report report: reports) {
+                        StringField id = new StringField(Report.ID, report.getId(), Field.Store.YES);
+                        TextField content = new TextField(Report.CONTENT, report.getContent(), Field.Store.NO);
 
-                            Document doc = new Document();
-                            doc.add(id);
-                            doc.add(author);
-                            doc.add(content);
-
-                            try {
-                                writer.addDocument(doc);
-                            } catch (IOException e) {
-                                e.printStackTrace();
-                                Logger.getGlobal().log(Level.SEVERE, "Index failed: " + e.toString());
-                                System.exit(1);
-                            }
+                        Document doc = new Document();
+                        doc.add(id);
+                        doc.add(content);
+                        
+                        try {
+                            writer.addDocument(doc);
+                        } catch (IOException e) {
+                            e.printStackTrace();
+                            Logger.getGlobal().log(Level.SEVERE, "Index failed.");
+                            System.exit(1);
                         }
-
-                         // TODO: Flush or not?
-//                        writer.flush();
                     }
                 });
             }
