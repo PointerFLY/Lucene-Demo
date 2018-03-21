@@ -19,17 +19,6 @@ import java.util.logging.Logger;
 class Indexer {
 
     private Analyzer analyzer = new StandardAnalyzer();
-    private ThreadPoolExecutor executor;
-
-    Indexer() {
-        executor = new ThreadPoolExecutor(
-                8,
-                64,
-                60,
-                TimeUnit.SECONDS,
-                new ArrayBlockingQueue<Runnable>(3000)
-        );
-    }
 
     Analyzer getAnalyzer() {
         return analyzer;
@@ -40,14 +29,21 @@ class Indexer {
     }
 
     void createIndex() {
+        ArrayList<Path> paths = FileUtils.getAllReportFiles();
+        ThreadPoolExecutor executor = new ThreadPoolExecutor(
+                Math.max(Runtime.getRuntime().availableProcessors(), 2),
+                64,
+                60,
+                TimeUnit.SECONDS,
+                new ArrayBlockingQueue<Runnable>(paths.size())
+        );
+
         try {
             IndexWriterConfig config = new IndexWriterConfig(analyzer);
             config.setOpenMode(IndexWriterConfig.OpenMode.CREATE);
-
             Directory dir = FSDirectory.open(FileUtils.INDEX_DIR);
             IndexWriter writer = new IndexWriter(dir, config);
 
-            ArrayList<Path> paths = FileUtils.getAllReportFiles();
             for (Path path: paths) {
                 executor.execute(() -> {
                     ArrayList<Report> reports = FileParser.readReport(path);
