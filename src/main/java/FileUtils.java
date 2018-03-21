@@ -1,12 +1,10 @@
 import org.codehaus.plexus.archiver.AbstractUnArchiver;
-import org.codehaus.plexus.archiver.UnArchiver;
 import org.codehaus.plexus.archiver.gzip.GZipUnArchiver;
-import org.codehaus.plexus.archiver.tar.TarGZipUnArchiver;
 import org.codehaus.plexus.archiver.zip.ZipUnArchiver;
 import org.codehaus.plexus.logging.console.ConsoleLoggerManager;
 
-import java.net.HttpURLConnection;
 import java.util.ArrayList;
+import java.util.Stack;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
@@ -14,6 +12,7 @@ import java.io.*;
 import java.net.MalformedURLException;
 import java.net.URL;
 import java.nio.file.*;
+import java.util.stream.Stream;
 
 class FileUtils {
 
@@ -23,6 +22,7 @@ class FileUtils {
 
     static final Path INDEX_DIR = TEMP_DIR.resolve("index/");
     static final Path TOPICS_FILE = DOCS_DIR.resolve("topics");
+    static final Path RESULTS_FILE = TEMP_DIR.resolve("results");
 
     private static final URL DOCS_URL;
     private static final URL TOPICS_URL;
@@ -37,9 +37,28 @@ class FileUtils {
     }
 
     static ArrayList<Path> getAllReportFiles() {
-        // TODO: Iterate REPORTS_DIR recursively, get report.
-        REPORTS_DIR.toFile();
-        return new ArrayList<Path>();
+        ArrayList<Path> paths = new ArrayList<>();
+
+        Stack<File> stack = new Stack<>();
+        File[] files = REPORTS_DIR.toFile().listFiles();
+        if (files == null) {
+            Logger.getGlobal().log(Level.SEVERE, "List report directory failed");
+            System.exit(1);
+        }
+
+        for (File file: files) {
+            stack.push(file);
+        }
+        while (!stack.isEmpty()) {
+            File file = stack.pop();
+            if (file.isFile() && file.getName().startsWith("fr")) {
+                paths.add(file.toPath());
+            } else {
+                stack.push(file);
+            }
+        }
+
+        return paths;
     }
 
     static void initialize() {
@@ -49,7 +68,6 @@ class FileUtils {
         // TODO: Bypass Google virus scan when downloading.
         Path reportZip = fetchDocs(DOCS_URL, TEMP_DIR.resolve("reports.zip"));
         decompress(topicsGZip, new GZipUnArchiver(), DOCS_DIR.resolve("topics"), null);
-        // TODO: Keep Report folder clean, only contain report, get rid of readme and dtds/.
         decompress(reportZip, new ZipUnArchiver(), null, DOCS_DIR);
     }
 
