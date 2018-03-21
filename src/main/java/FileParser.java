@@ -4,6 +4,7 @@ import org.jsoup.select.Elements;
 import org.jsoup.nodes.Element;
 
 import java.io.IOException;
+import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.util.ArrayList;
@@ -18,7 +19,7 @@ class FileParser {
         ArrayList<Report> reports = new ArrayList<>();
 
         try {
-            Document dom = Jsoup.parse(path.toFile(), "UTF-8");
+            Document dom = Jsoup.parse(path.toFile(), StandardCharsets.UTF_8.name());
             Elements docs = dom.select("doc");
 
             for (Element doc : docs) {
@@ -30,7 +31,7 @@ class FileParser {
         } catch (IOException e) {
             e.printStackTrace();
             Logger.getGlobal().log(Level.SEVERE, String.format("Read report %s failed.", path.getFileName()));
-            System.exit(0);
+            System.exit(1);
         }
 
         return reports;
@@ -58,7 +59,7 @@ class FileParser {
         } catch (Exception e) {
             e.printStackTrace();
             Logger.getGlobal().log(Level.SEVERE, String.format("Read Topics %s failed.", path.getFileName()));
-            System.exit(0);
+            System.exit(1);
         }
 
         return topics;

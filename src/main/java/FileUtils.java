@@ -112,8 +112,6 @@ class FileUtils {
     }
 
     private static Path fetchDocs(URL url, Path path) {
-        String urlStr = url.toString();
-
         try {
             if (Files.notExists(path)) {
                 InputStream in = url.openStream();

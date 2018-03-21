@@ -10,9 +10,7 @@ import org.apache.lucene.store.FSDirectory;
 import java.io.*;
 import java.nio.file.Path;
 import java.util.ArrayList;
-import java.util.concurrent.ArrayBlockingQueue;
-import java.util.concurrent.ThreadPoolExecutor;
-import java.util.concurrent.TimeUnit;
+import java.util.concurrent.*;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
@@ -30,13 +28,7 @@ class Indexer {
 
     void createIndex() {
         ArrayList<Path> paths = FileUtils.getAllReportFiles();
-        ThreadPoolExecutor executor = new ThreadPoolExecutor(
-                Math.max(Runtime.getRuntime().availableProcessors(), 2),
-                64,
-                60,
-                TimeUnit.SECONDS,
-                new ArrayBlockingQueue<Runnable>(paths.size())
-        );
+        ExecutorService executor = Executors.newFixedThreadPool(Runtime.getRuntime().availableProcessors());
 
         try {
             IndexWriterConfig config = new IndexWriterConfig(analyzer);

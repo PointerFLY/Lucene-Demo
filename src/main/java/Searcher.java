@@ -63,6 +63,7 @@ class Searcher {
     }
 
     private Query generateQuery(Topic topic) {
+        // TODO: Optimization needed, query expansion.
         String fields[] = new String[] { Report.CONTENT };
         QueryParser parser = new MultiFieldQueryParser(fields, analyzer);
 

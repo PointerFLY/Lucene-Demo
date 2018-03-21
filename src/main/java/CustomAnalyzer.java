@@ -10,6 +10,7 @@ class CustomAnalyzer extends Analyzer {
 
     @Override
     protected TokenStreamComponents createComponents(String fieldName) {
+        // TODO: Fine tune analyzer
         Tokenizer source = new ClassicTokenizer();
         TokenStream tokenStream = new LowerCaseFilter(source);
         tokenStream = new EnglishPossessiveFilter(tokenStream);
