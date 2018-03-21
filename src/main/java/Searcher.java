@@ -1,26 +1,29 @@
 import org.apache.lucene.analysis.Analyzer;
 import org.apache.lucene.analysis.standard.StandardAnalyzer;
-import org.apache.lucene.document.Document;
 import org.apache.lucene.index.DirectoryReader;
-import org.apache.lucene.queryparser.classic.ParseException;
+import org.apache.lucene.queryparser.classic.MultiFieldQueryParser;
 import org.apache.lucene.queryparser.classic.QueryParser;
 import org.apache.lucene.search.IndexSearcher;
 import org.apache.lucene.search.Query;
 import org.apache.lucene.search.ScoreDoc;
 import org.apache.lucene.search.similarities.Similarity;
 import org.apache.lucene.store.FSDirectory;
+
 import java.io.IOException;
-import java.util.ArrayList;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
 class Searcher {
 
     private Analyzer analyzer = new StandardAnalyzer();
-    private IndexSearcher searcher;
+    private IndexSearcher indexSearcher;
 
     Analyzer getAnalyzer() {
         return analyzer;
+    }
+
+    IndexSearcher getIndexSearcher() {
+        return indexSearcher;
     }
 
     void setAnalyzer(Analyzer analyzer) {
@@ -28,13 +31,13 @@ class Searcher {
     }
 
     void setSimilarity(Similarity similarity) {
-        searcher.setSimilarity(similarity);
+        indexSearcher.setSimilarity(similarity);
     }
 
     void readIndex() {
         try {
             DirectoryReader reader = DirectoryReader.open(FSDirectory.open(FileUtils.INDEX_DIR));
-            searcher = new IndexSearcher(reader);
+            indexSearcher = new IndexSearcher(reader);
         } catch (IOException e) {
             e.printStackTrace();
             Logger.getGlobal().log(Level.SEVERE, "Read index failed");
@@ -42,18 +45,11 @@ class Searcher {
         }
     }
 
-    ArrayList<String> search(Topic topic, int topHitsCount) {
+    ScoreDoc[] search(Topic topic, int topHitsCount) {
         Query query = generateQuery(topic);
 
         try {
-            ScoreDoc[] hits = searcher.search(query, topHitsCount).scoreDocs;
-            ArrayList<String> reportIds = new ArrayList<>();
-            for (ScoreDoc hit: hits) {
-                Document report = searcher.doc(hit.doc);
-                String id = report.get(Report.ID);
-                reportIds.add(id);
-            }
-            return reportIds;
+            return indexSearcher.search(query, topHitsCount).scoreDocs;
         } catch (IOException e) {
             e.printStackTrace();
             Logger.getGlobal().log(Level.SEVERE, "Search error");
@@ -64,14 +60,15 @@ class Searcher {
     }
 
     private Query generateQuery(Topic topic) {
-        // TODO: Wise query generator
-        QueryParser parser = new QueryParser("id", analyzer);
+        String fields[] = new String[] { Report.CONTENT };
+        QueryParser parser = new MultiFieldQueryParser(fields, analyzer);
 
         try {
-            return parser.parse(topic.getDescription());
-        } catch (ParseException e) {
+            String queryStr = topic.getTitle() + " " + topic.getDescription();
+            return parser.parse(queryStr);
+        } catch (Exception e) {
             e.printStackTrace();
-            Logger.getGlobal().log(Level.SEVERE, "Parse query error");
+            Logger.getGlobal().log(Level.SEVERE, "Parse query string failed.");
             System.exit(1);
         }
 
