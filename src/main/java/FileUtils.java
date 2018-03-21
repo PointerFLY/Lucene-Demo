@@ -3,8 +3,8 @@ import org.codehaus.plexus.archiver.gzip.GZipUnArchiver;
 import org.codehaus.plexus.archiver.zip.ZipUnArchiver;
 import org.codehaus.plexus.logging.console.ConsoleLoggerManager;
 
-import java.util.ArrayList;
-import java.util.Stack;
+import java.lang.reflect.Array;
+import java.util.*;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
@@ -12,6 +12,7 @@ import java.io.*;
 import java.net.MalformedURLException;
 import java.net.URL;
 import java.nio.file.*;
+import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
 class FileUtils {
@@ -23,6 +24,9 @@ class FileUtils {
     static final Path INDEX_DIR = TEMP_DIR.resolve("index/");
     static final Path TOPICS_FILE = DOCS_DIR.resolve("topics");
     static final Path RESULTS_FILE = TEMP_DIR.resolve("results");
+
+    private static final List<String> REPORTS_SUBDIR_NAMES = Arrays.asList("fbis", "fr94", "ft", "latimes");
+    private static final List<String> REPORTS_VALID_PREFIXES = Arrays.asList("fb", "fr", "ft", "la");
 
     private static final URL DOCS_URL;
     private static final URL TOPICS_URL;
@@ -40,21 +44,29 @@ class FileUtils {
         ArrayList<Path> paths = new ArrayList<>();
 
         Stack<File> stack = new Stack<>();
-        File[] files = REPORTS_DIR.toFile().listFiles();
-        if (files == null) {
-            Logger.getGlobal().log(Level.SEVERE, "List report directory failed");
-            System.exit(1);
-        }
+        REPORTS_SUBDIR_NAMES.forEach(item ->
+            stack.push(REPORTS_DIR.resolve(item).toFile())
+        );
 
-        for (File file: files) {
-            stack.push(file);
-        }
         while (!stack.isEmpty()) {
             File file = stack.pop();
-            if (file.isFile() && file.getName().startsWith("fr")) {
-                paths.add(file.toPath());
+
+            if (file.isFile()) {
+                String fileNamePrefix = file.getName().substring(0, REPORTS_VALID_PREFIXES.get(0).length());
+                boolean isReportFile = REPORTS_VALID_PREFIXES.contains(fileNamePrefix);
+                if (isReportFile) {
+                    paths.add(file.toPath());
+                }
             } else {
-                stack.push(file);
+                File[] subFiles = file.listFiles();
+                if (subFiles == null) {
+                    Logger.getGlobal().log(Level.SEVERE, "List reports file failed");
+                    System.exit(1);
+                }
+
+                for (File item: subFiles) {
+                    stack.push(item);
+                }
             }
         }
 

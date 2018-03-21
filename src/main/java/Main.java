@@ -1,6 +1,8 @@
 public class Main {
 
     public static void main(String[] args) {
+        FileUtils.initialize();
+
         Indexer indexer = new Indexer();
         indexer.createIndex();
 
@@ -8,6 +10,6 @@ public class Main {
         searcher.readIndex();
 
         Evaluator evaluator = new Evaluator(searcher);
-        evaluator.evaluateAll(true);
+        evaluator.generateResults();
     }
 }
