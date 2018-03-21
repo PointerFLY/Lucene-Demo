@@ -6,6 +6,7 @@ import org.apache.lucene.queryparser.classic.QueryParser;
 import org.apache.lucene.search.IndexSearcher;
 import org.apache.lucene.search.Query;
 import org.apache.lucene.search.ScoreDoc;
+import org.apache.lucene.search.similarities.BM25Similarity;
 import org.apache.lucene.search.similarities.Similarity;
 import org.apache.lucene.store.FSDirectory;
 
@@ -17,6 +18,7 @@ class Searcher {
 
     private Analyzer analyzer = new StandardAnalyzer();
     private IndexSearcher indexSearcher;
+    private Similarity similarity = new BM25Similarity();
 
     Analyzer getAnalyzer() {
         return analyzer;
@@ -31,13 +33,14 @@ class Searcher {
     }
 
     void setSimilarity(Similarity similarity) {
-        indexSearcher.setSimilarity(similarity);
+        this.similarity = similarity;
     }
 
     void readIndex() {
         try {
             DirectoryReader reader = DirectoryReader.open(FSDirectory.open(FileUtils.INDEX_DIR));
             indexSearcher = new IndexSearcher(reader);
+            indexSearcher.setSimilarity(similarity);
         } catch (IOException e) {
             e.printStackTrace();
             Logger.getGlobal().log(Level.SEVERE, "Read index failed");
