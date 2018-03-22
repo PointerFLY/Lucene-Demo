@@ -1,12 +1,9 @@
 import org.codehaus.plexus.archiver.AbstractUnArchiver;
-import org.codehaus.plexus.archiver.UnArchiver;
 import org.codehaus.plexus.archiver.gzip.GZipUnArchiver;
-import org.codehaus.plexus.archiver.tar.TarGZipUnArchiver;
 import org.codehaus.plexus.archiver.zip.ZipUnArchiver;
 import org.codehaus.plexus.logging.console.ConsoleLoggerManager;
 
-import java.net.HttpURLConnection;
-import java.util.ArrayList;
+import java.util.*;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
@@ -23,6 +20,10 @@ class FileUtils {
 
     static final Path INDEX_DIR = TEMP_DIR.resolve("index/");
     static final Path TOPICS_FILE = DOCS_DIR.resolve("topics");
+    static final Path RESULTS_FILE = TEMP_DIR.resolve("results.out");
+
+    private static final List<String> REPORTS_SUBDIR_NAMES = Arrays.asList("fbis", "fr94", "ft", "latimes");
+    private static final List<String> REPORTS_VALID_PREFIXES = Arrays.asList("fb", "fr", "ft", "la");
 
     private static final URL DOCS_URL;
     private static final URL TOPICS_URL;
@@ -37,9 +38,36 @@ class FileUtils {
     }
 
     static ArrayList<Path> getAllReportFiles() {
-        // TODO: Iterate REPORTS_DIR recursively, get report.
-        REPORTS_DIR.toFile();
-        return new ArrayList<Path>();
+        ArrayList<Path> paths = new ArrayList<>();
+
+        Stack<File> stack = new Stack<>();
+        REPORTS_SUBDIR_NAMES.forEach(item ->
+            stack.push(REPORTS_DIR.resolve(item).toFile())
+        );
+
+        while (!stack.isEmpty()) {
+            File file = stack.pop();
+
+            if (file.isFile()) {
+                String fileNamePrefix = file.getName().substring(0, REPORTS_VALID_PREFIXES.get(0).length());
+                boolean isReportFile = REPORTS_VALID_PREFIXES.contains(fileNamePrefix);
+                if (isReportFile) {
+                    paths.add(file.toPath());
+                }
+            } else {
+                File[] subFiles = file.listFiles();
+                if (subFiles == null) {
+                    Logger.getGlobal().log(Level.SEVERE, "List reports file failed");
+                    System.exit(1);
+                }
+
+                for (File item: subFiles) {
+                    stack.push(item);
+                }
+            }
+        }
+
+        return paths;
     }
 
     static void initialize() {
@@ -49,7 +77,6 @@ class FileUtils {
         // TODO: Bypass Google virus scan when downloading.
         Path reportZip = fetchDocs(DOCS_URL, TEMP_DIR.resolve("reports.zip"));
         decompress(topicsGZip, new GZipUnArchiver(), DOCS_DIR.resolve("topics"), null);
-        // TODO: Keep Report folder clean, only contain report, get rid of readme and dtds/.
         decompress(reportZip, new ZipUnArchiver(), null, DOCS_DIR);
     }
 
@@ -82,8 +109,6 @@ class FileUtils {
     }
 
     private static Path fetchDocs(URL url, Path path) {
-        String urlStr = url.toString();
-
         try {
             if (Files.notExists(path)) {
                 InputStream in = url.openStream();
