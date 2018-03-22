@@ -1,5 +1,7 @@
 # Lucene-Example
 
+ToDO; Improve this by adding an command on running this code on the terminal and write the Interconectedness of the java files too
+
 A simple document search engine powered by Lucene.
 
 ## How to run
