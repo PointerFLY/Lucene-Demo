@@ -13,7 +13,8 @@ import java.util.List;
 class CustomAnalyzer extends Analyzer {
 
     private static final List<String> STOP_WORDS = Arrays.asList(
-            "how", "when", "you", "from", "you", "can", "get", "relevant"
+            "what", "relevant", "done", "have", "how", "new", "must",
+            "than", "some", "other", "stoic", "likely", "all"
     );
 
     @Override
@@ -24,10 +25,10 @@ class CustomAnalyzer extends Analyzer {
         tokenStream = new EnglishPossessiveFilter(tokenStream);
         tokenStream = new EnglishMinimalStemFilter(tokenStream);
         tokenStream = new KStemFilter(tokenStream);
-        tokenStream = new PorterStemFilter(tokenStream);
         CharArraySet stopSet = CharArraySet.copy(StopAnalyzer.ENGLISH_STOP_WORDS_SET);
         stopSet.addAll(STOP_WORDS);
         tokenStream = new StopFilter(tokenStream, stopSet);
+        tokenStream = new PorterStemFilter(tokenStream);
         return new TokenStreamComponents(source, tokenStream);
     }
 }
