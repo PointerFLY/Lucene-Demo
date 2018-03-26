@@ -1,3 +1,5 @@
+import java.util.ArrayList;
+
 class Topic {
 
     private int id;
@@ -29,5 +31,16 @@ class Topic {
 
     String getNarrative() {
         return narrative;
+    }
+
+    String getRelevantNarrative() {
+        String[] splits = narrative.split("\\.");
+        StringBuilder relevantNarrative = new StringBuilder();
+        for (String split: splits) {
+            if (!split.contains("not relevant")) {
+                relevantNarrative.append(split).append(" ");
+            }
+        }
+        return relevantNarrative.toString();
     }
 }

@@ -8,7 +8,7 @@ public class Main {
 
         Indexer indexer = new Indexer();
         indexer.setAnalyzer(new CustomAnalyzer());
-//        indexer.createIndex();
+        indexer.createIndex();
 
         Searcher searcher = new Searcher();
         searcher.setAnalyzer(new CustomAnalyzer());

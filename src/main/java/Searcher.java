@@ -68,8 +68,8 @@ class Searcher {
         QueryParser parser = new MultiFieldQueryParser(fields, analyzer);
 
         try {
-            String queryStr = topic.getTitle() + " " + topic.getDescription();
-            return parser.parse(queryStr);
+            String queryStr = topic.getTitle() + " " + topic.getDescription() + " " + topic.getRelevantNarrative();
+            return parser.parse(QueryParser.escape(queryStr));
         } catch (Exception e) {
             e.printStackTrace();
             Logger.getGlobal().log(Level.SEVERE, "Parse query string failed.");
