@@ -22,8 +22,6 @@ class Evaluator {
 
     void generateResults() {
         try {
-            Files.deleteIfExists(FileUtils.RESULTS_FILE);
-            Files.createFile(FileUtils.RESULTS_FILE);
             BufferedWriter writer = new BufferedWriter(new FileWriter(FileUtils.RESULTS_FILE.toFile()));
 
             for (Topic topic: topics) {

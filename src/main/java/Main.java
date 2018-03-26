@@ -7,11 +7,11 @@ public class Main {
         FileUtils.initialize();
 
         Indexer indexer = new Indexer();
-        indexer.setAnalyzer(new StandardAnalyzer());
-        indexer.createIndex();
+        indexer.setAnalyzer(new CustomAnalyzer());
+//        indexer.createIndex();
 
         Searcher searcher = new Searcher();
-        searcher.setAnalyzer(new StandardAnalyzer());
+        searcher.setAnalyzer(new CustomAnalyzer());
         // TODO: Custom similarity.
         searcher.setSimilarity(new BM25Similarity());
         searcher.readIndex();

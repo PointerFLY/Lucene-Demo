@@ -23,7 +23,7 @@ class FileUtils {
 
     static final Path INDEX_DIR = TEMP_DIR.resolve("index/");
     static final Path TOPICS_FILE = DOCS_DIR.resolve("topics");
-    static final Path RESULTS_FILE = TEMP_DIR.resolve("results");
+    static final Path RESULTS_FILE = TEMP_DIR.resolve("results.output");
 
     private static final List<String> REPORTS_SUBDIR_NAMES = Arrays.asList("fbis", "fr94", "ft", "latimes");
     private static final List<String> REPORTS_VALID_PREFIXES = Arrays.asList("fb", "fr", "ft", "la");
