@@ -12,8 +12,7 @@ import java.util.List;
 class CustomAnalyzer extends Analyzer {
 
     private static final List<String> STOP_WORDS = Arrays.asList(
-            "what", "relevant", "done", "have", "how", "new", "must",
-            "than", "some", "other", "stoic", "likely", "all"
+            "relevant", "must", "what", "where", "how", "document"
     );
 
     @Override
