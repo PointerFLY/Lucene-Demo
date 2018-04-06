@@ -12,7 +12,6 @@ public class Main {
 
         Searcher searcher = new Searcher();
         searcher.setAnalyzer(new CustomAnalyzer());
-        // TODO: Custom similarity.
         searcher.setSimilarity(new BM25Similarity());
         searcher.readIndex();
 

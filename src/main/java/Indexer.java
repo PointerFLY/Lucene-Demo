@@ -4,6 +4,7 @@ import org.apache.lucene.document.*;
 import org.apache.lucene.document.Document;
 import org.apache.lucene.index.IndexWriter;
 import org.apache.lucene.index.IndexWriterConfig;
+import org.apache.lucene.queryparser.classic.QueryParser;
 import org.apache.lucene.store.Directory;
 import org.apache.lucene.store.FSDirectory;
 
@@ -40,7 +41,6 @@ class Indexer {
                 executor.execute(() -> {
                     ArrayList<Report> reports = FileParser.readReport(path);
 
-                    // TODO: Topics, more members, add document wisely.
                     for (Report report: reports) {
                         StringField id = new StringField(Report.ID, report.getId(), Field.Store.YES);
                         TextField content = new TextField(Report.CONTENT, report.getContent(), Field.Store.NO);

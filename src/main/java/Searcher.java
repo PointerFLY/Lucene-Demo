@@ -3,9 +3,7 @@ import org.apache.lucene.analysis.standard.StandardAnalyzer;
 import org.apache.lucene.index.DirectoryReader;
 import org.apache.lucene.queryparser.classic.MultiFieldQueryParser;
 import org.apache.lucene.queryparser.classic.QueryParser;
-import org.apache.lucene.search.IndexSearcher;
-import org.apache.lucene.search.Query;
-import org.apache.lucene.search.ScoreDoc;
+import org.apache.lucene.search.*;
 import org.apache.lucene.search.similarities.BM25Similarity;
 import org.apache.lucene.search.similarities.Similarity;
 import org.apache.lucene.store.FSDirectory;
@@ -63,13 +61,22 @@ class Searcher {
     }
 
     private Query generateQuery(Topic topic) {
-        // TODO: Optimization needed, query expansion.
         String fields[] = new String[] { Report.CONTENT };
         QueryParser parser = new MultiFieldQueryParser(fields, analyzer);
 
         try {
-            String queryStr = topic.getTitle() + " " + topic.getDescription() + " " + topic.getRelevantNarrative();
-            return parser.parse(QueryParser.escape(queryStr));
+            Query titleQuery = parser.parse(QueryParser.escape(topic.getTitle()));
+            titleQuery = new BoostQuery(titleQuery, 4.2f);
+            Query descriptionQuery = parser.parse(QueryParser.escape(topic.getDescription()));
+            descriptionQuery = new BoostQuery(descriptionQuery, 1.8f);
+            Query narrativeQuery = parser.parse(QueryParser.escape("a" + topic.getRelevantNarrative()));
+
+            BooleanQuery.Builder builder = new BooleanQuery.Builder();
+            builder.add(titleQuery, BooleanClause.Occur.MUST);
+            builder.add(descriptionQuery, BooleanClause.Occur.MUST);
+            builder.add(narrativeQuery, BooleanClause.Occur.MUST);
+
+            return builder.build();
         } catch (Exception e) {
             e.printStackTrace();
             Logger.getGlobal().log(Level.SEVERE, "Parse query string failed.");

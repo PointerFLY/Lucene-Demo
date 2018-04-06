@@ -5,7 +5,6 @@ import org.apache.lucene.analysis.en.EnglishPossessiveFilter;
 import org.apache.lucene.analysis.en.KStemFilter;
 import org.apache.lucene.analysis.en.PorterStemFilter;
 import org.apache.lucene.analysis.standard.ClassicTokenizer;
-import org.apache.lucene.analysis.standard.StandardAnalyzer;
 
 import java.util.Arrays;
 import java.util.List;
@@ -19,7 +18,6 @@ class CustomAnalyzer extends Analyzer {
 
     @Override
     protected TokenStreamComponents createComponents(String fieldName) {
-        // TODO: Fine tune analyzer
         Tokenizer source = new ClassicTokenizer();
         TokenStream tokenStream = new LowerCaseFilter(source);
         tokenStream = new EnglishPossessiveFilter(tokenStream);
