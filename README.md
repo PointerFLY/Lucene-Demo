@@ -44,7 +44,7 @@ trec_eval qrels results.output
 ## Performance
 
 |Metric|Result|
-|:--:|:--:|:--:|
+|:--:|:--:|
 |Mean Average Precision|0.2847|
 |Recall 5|  0.0778 |
 |Recall 10| 	0.1269 |
