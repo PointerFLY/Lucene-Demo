@@ -1,6 +1,21 @@
-# Lucene-Example
+# Report Indexer
 
-A simple document search engine powered by Lucene.
+A search engine for news reports powered by Lucene.  
+The project is similar to [Lucence-Example](https://github.com/PointerFLY/Lucene-Example), check it out if necessary.
+
+
+## Data Chosen 
+
+* [News Reports](
+https://drive.google.com/a/tcd.ie/uc?export=download&confirm=rjCk&id=1MudJity9Ckh8jxapFx3OS-DLEkcvbYYx)  
+Each sub-folder within this dataset contains a document collection from different sources: Financial Times Limited, Federal Register (1994), Foreign Broadcast Information Service (1996), Los Angeles Times (1989, 1990).
+
+* [Topics](https://www.dropbox.com/s/277vn6l23z2e6ku/CS7IS3-Assignment2-Topics.gz?dl=1)  
+Assume a topic is one user's query, a search engine needs to find the best match report for a topic.
+
+* qrels  
+The file can be found under temp folder. It's an evaluation baseline file, in a format of [trec_eval](https://github.com/usnistgov/trec_eval). 
+
 
 ## How to run
 
@@ -9,72 +24,32 @@ I recommend open it with IDE who supports Gradle, such as [Intellij IDEA](https:
 
 ```bash
 # Make sure gradle is installed.
-git clone https://github.com/PointerFLY/Lucene-Example.git
-cd Lucene-Example
+git clone https://github.com/PointerFLY/Report-Indexer.git
+cd Report-Indexer
 gradle run
 ```
 
-## Class Structure
+Since there's some problems with Google Drive when downloading a big file, it may prompt an error when executing. In that case, please download **News Reports** file by yourself based on the url provided, rename it and put it in the right place (I think you are smart enough to figure out where to put it in by looking at FileUtils.java).
 
-|Class|Functionality|
-|:--:|:--|
-|FileUtils|Create local folder structures, automatically download and decompress [Cranfield](http://ir.dcs.gla.ac.uk/resources/test_collections/cran/) files. Provide access to all necessary files (Cranfield files, index files).|
-|FileParser|A parser used to parse and load Cranfield files into a Java supported data structre. |
-|DocumentModel|A simple object-oriented way to represent Cranfield documents.|
-|Indexer|Responsible to create all indices.|
-|Searcher|Read indices created by Indexer, parse the query string and exectute search. A search will return top hits documents ids.|
-|CustomAnalyzer|A analyzer created by myself to compare its performances with other built-in Analyzer in Lucene.|
-|Evaluator|Calculate Mean Average Precision, Recall.|
-|Main|Entry of program, run different analyzers and scoring models and print results.|
+After gradle run, a results.output file will be generated. Use [trec_eval](https://github.com/usnistgov/trec_eval) to evaluate it properly.
 
-## Analyzer
-
-* StandardAnalyzer  
-Built-in Analyzer in Lucene, the most robust one. Filters StandardTokenizer with StandardFilter, LowerCaseFilter and StopFilter, using a list of English stop words.
-
-* CustomAnalyzer
-I select differnt tokenizer and filters, combine them, fine-tune the pipeline. Finally choose a analysis pipeline below:
-
-```java
-public class CustomAnalyzer extends Analyzer {
-
-    @Override
-    protected TokenStreamComponents createComponents(String fieldName) {
-        Tokenizer source = new ClassicTokenizer();
-        TokenStream tokenStream = new LowerCaseFilter(source);
-        tokenStream = new EnglishPossessiveFilter(tokenStream);
-        tokenStream = new EnglishMinimalStemFilter(tokenStream);
-        tokenStream = new KStemFilter(tokenStream);
-        tokenStream = new PorterStemFilter(tokenStream);
-        CharArraySet stopSet = CharArraySet.copy(StopAnalyzer.ENGLISH_STOP_WORDS_SET);
-        tokenStream = new StopFilter(tokenStream, stopSet);
-        return new TokenStreamComponents(source, tokenStream);
-    }
-}
+```bash
+cd temp
+# Mean Average Precision, Recall and other metrics
+trec_eval -m map qrels results.output
+trec_eval -m recall qrels results.output
+trec_eval qrels results.output
 ```
 
-## Scoring Model
-
-I choose two built-in Lucene scoring model, which is subclasses of Similarity in Lucene.
-
-* ClassicSimilarity  
-A implementation of TFIDFSimilarity. It is actually a Vector Sapce Model base on TF-IDF term weighting.
-
-* BM25Similarity  
-A TF-IDF-like ranking function used in document retrieval, which is generally considered superior to TF-IDF.
-
 ## Performance
-Note: MAP and recall are average of 225 queries.
 
-|N/A|StandardAnalyzer|CustomAnalyzer|
+|Metric|Result|
 |:--:|:--:|:--:|
-|Vector Space Model|MAP: 0.4905 Recall: 0.6445|MAP: 0.5038 Recall: 0.6839|
-|BM25 Model|MAP: 0.5418 Recall: 0.6826|MAP: 0.5435 Recall: 0.7233|
-
-**Conclusion:**
-
-* BM25 Model outperforms Vector Space Model. 
-* CustomAnalyzer outperforms StandardAnalzyer.
+|Mean Average Precision|0.2847|
+|Recall 5|  0.0778 |
+|Recall 10| 	0.1269 |
+|Recall 20| 0.1965 |
+|Recall 100| 0.3955 |
 
 
 
